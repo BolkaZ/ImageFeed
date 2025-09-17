@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="24127" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="BYZ-38-t0r">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="24127" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="FSz-3h-eO2">
     <device id="retina6_12" orientation="portrait" appearance="light"/>
     <dependencies>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="24063"/>
@@ -110,7 +110,7 @@
                                     <constraint firstAttribute="width" constant="70" id="ncf-xn-di8"/>
                                 </constraints>
                             </imageView>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="ye3-XK-RFY" userLabel="Exit Button">
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="ye3-XK-RFY" userLabel="Logout Button">
                                 <rect key="frame" x="335" y="163" width="44" height="44"/>
                                 <constraints>
                                     <constraint firstAttribute="width" constant="44" id="C47-Kp-yx5"/>
@@ -118,6 +118,9 @@
                                 </constraints>
                                 <state key="normal" title="Button"/>
                                 <buttonConfiguration key="configuration" style="plain" image="Exit"/>
+                                <connections>
+                                    <action selector="logoutTapped" destination="FSz-3h-eO2" eventType="touchUpInside" id="xih-KU-Xl9"/>
+                                </connections>
                             </button>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Екатерина Новикова" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Sob-Cl-YRi" userLabel="Name Label">
                                 <rect key="frame" x="15.999999999999986" y="228" width="233.66666666666663" height="27.666666666666657"/>
@@ -153,6 +156,13 @@
                             <constraint firstItem="Sob-Cl-YRi" firstAttribute="leading" secondItem="xdv-xM-VlB" secondAttribute="leading" constant="16" id="wvm-pi-QCS"/>
                         </constraints>
                     </view>
+                    <connections>
+                        <outlet property="logoutButton" destination="ye3-XK-RFY" id="ngV-LG-Z5O"/>
+                        <outlet property="nameLable" destination="Sob-Cl-YRi" id="3LH-mS-lU2"/>
+                        <outlet property="profileDescriptionLabel" destination="9kX-7m-tWq" id="VKI-xp-VlW"/>
+                        <outlet property="profileImageView" destination="d9u-XH-qBD" id="W0b-4I-hRO"/>
+                        <outlet property="userNameLabel" destination="TJ3-5C-EZ6" id="nhB-WK-gHp"/>
+                    </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="Yqe-7D-FnG" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
