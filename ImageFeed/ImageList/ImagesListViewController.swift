@@ -20,6 +20,7 @@ class ImagesListViewController: UIViewController {
                 }
 
                 let image = UIImage(named: photosName[indexPath.row])
+                viewController.image = image
                 _ = viewController.view
                 viewController.imageView.image = image
             } else {
