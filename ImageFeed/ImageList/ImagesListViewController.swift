@@ -10,22 +10,20 @@ class ImagesListViewController: UIViewController {
     }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-            if segue.identifier == showSingleImageIdentifier {
-                guard
-                    let viewController = segue.destination as? SingleImageViewController,
-                    let indexPath = sender as? IndexPath
-                else {
-                    assertionFailure("Invalid segue destination")
-                    return
-                }
-
-                let image = UIImage(named: photosName[indexPath.row])
-                viewController.image = image
-                _ = viewController.view
-                viewController.imageView.image = image
-            } else {
-                super.prepare(for: segue, sender: sender)
+        if segue.identifier == showSingleImageIdentifier {
+            guard
+                let viewController = segue.destination as? SingleImageViewController,
+                let indexPath = sender as? IndexPath
+            else {
+                assertionFailure("Invalid segue destination")
+                return
             }
+            
+            let image = UIImage(named: photosName[indexPath.row])
+            viewController.image = image
+        } else {
+            super.prepare(for: segue, sender: sender)
+        }
     }
     
     private let photosName: [String] = Array(0..<20).map{ "\($0)" }
@@ -41,7 +39,7 @@ class ImagesListViewController: UIViewController {
 
 extension ImagesListViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        performSegue(withIdentifier: showSingleImageIdentifier, sender: indexPath)
+        performSegue(withIdentifier: showSingleImageIdentifier, sender: indexPath) // Thread 1: Fatal error: Unexpectedly found nil while implicitly unwrapping an Optional value
     }
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
