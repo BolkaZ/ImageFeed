@@ -1,6 +1,6 @@
 import UIKit
 
-class ImagesListViewController: UIViewController {
+final class ImagesListViewController: UIViewController {
     private var showSingleImageIdentifier = "ShowSingleImage"
     
     @IBOutlet private var tableView: UITableView!
@@ -39,7 +39,7 @@ class ImagesListViewController: UIViewController {
 
 extension ImagesListViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        performSegue(withIdentifier: showSingleImageIdentifier, sender: indexPath) // Thread 1: Fatal error: Unexpectedly found nil while implicitly unwrapping an Optional value
+        performSegue(withIdentifier: showSingleImageIdentifier, sender: indexPath) 
     }
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
