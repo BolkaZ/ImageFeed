@@ -6,46 +6,31 @@ final class OAuth2Service {
     
     func fetchOAuthToken(_ code: String, completion: @escaping (Result<String, Error>) -> Void) {
         guard let request = makeOAuthTokenRequest(code: code) else {
-            completion(.failure(NSError(domain: "Не получилось создать запрос", code: 0)))
+            completion(.failure(NSError(domain: "Не получилось создать запрос", code: 0, userInfo: nil)))
             return
         }
         
-        let task = URLSession.shared.dataTask(with: request) { data, response, error in
-            if let error = error {
-                print("Ошибка сети: \(error.localizedDescription)")
-                DispatchQueue.main.async {
-                    completion(.failure(error))
-                }
-                return
-            }
-            
-            guard let data = data else {
-                print("Нет данных в ответе")
-                DispatchQueue.main.async {
-                    completion(.failure(NSError(domain: "Нет данных", code: 0)))
-                }
-                return
-            }
-            
-            do {
-                if let json = try JSONSerialization.jsonObject(with: data) as? [String: Any],
-                   let token = json["access_token"] as? String {
-                    print("Токен получен: \(token)")
-                    OAuth2TokenStorage.shared.token = token
-                    DispatchQueue.main.async {
+        let task = URLSession.shared.data(for: request) { result in
+            switch result {
+            case .success(let data):
+                do {
+                    if let json = try JSONSerialization.jsonObject(with: data) as? [String: Any],
+                       let token = json["access_token"] as? String {
+                        print("Токен получен: \(token)")
+                        OAuth2TokenStorage.shared.token = token
                         completion(.success(token))
+                    } else {
+                        print("В ответе нет токена")
+                        completion(.failure(NSError(domain: "Нет токена", code: 0, userInfo: nil)))
                     }
-                } else {
-                    print("В ответе нет токена")
-                    DispatchQueue.main.async {
-                        completion(.failure(NSError(domain: "Нет токена", code: 0)))
-                    }
-                }
-            } catch {
-                print("Ошибка чтения JSON: \(error)")
-                DispatchQueue.main.async {
+                } catch {
+                    print("Ошибка чтения JSON: \(error)")
                     completion(.failure(error))
                 }
+                
+            case .failure(let error):
+                print("Ошибка сети или HTTP-статус: \(error)")
+                completion(.failure(error))
             }
         }
         task.resume()
@@ -73,4 +58,3 @@ final class OAuth2Service {
         return request
     }
 }
-
