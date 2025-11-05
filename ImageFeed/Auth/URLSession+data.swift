@@ -24,12 +24,17 @@ extension URLSession {
                 if 200 ..< 300 ~= statusCode {
                     fulfillCompletionOnTheMainThread(.success(data))
                 } else {
-                    fulfillCompletionOnTheMainThread(.failure(NetworkError.httpStatusCode(statusCode)))
+                    let error = NetworkError.httpStatusCode(statusCode)
+                    print("[dataTask]: NetworkError - код ошибки \(statusCode)")
+                    fulfillCompletionOnTheMainThread(.failure(error))
                 }
             } else if let error = error {
+                print("[dataTask]: URLRequestError - \(error.localizedDescription)")
                 fulfillCompletionOnTheMainThread(.failure(NetworkError.urlRequestError(error)))
             } else {
-                fulfillCompletionOnTheMainThread(.failure(NetworkError.urlSessionError))
+                let error = NetworkError.urlSessionError
+                print("[dataTask]: URLSessionError - неизвестная ошибка")
+                fulfillCompletionOnTheMainThread(.failure(error))
             }
         })
         

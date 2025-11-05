@@ -92,7 +92,7 @@
                     <navigationItem key="navigationItem" id="YNi-s7-mUX"/>
                     <connections>
                         <outlet property="tableView" destination="sCF-Yt-D9w" id="dAh-JE-Hoe"/>
-                        <segue destination="EYT-qY-YQ5" kind="presentation" identifier="ShowSingleImage" animates="NO" id="s0c-Kj-GFQ"/>
+                        <segue destination="EYT-qY-YQ5" kind="presentation" identifier="ShowSingleImage" id="s0c-Kj-GFQ"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>

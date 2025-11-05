@@ -1,5 +1,5 @@
 import UIKit
- 
+
 final class TabBarController: UITabBarController {
     override func awakeFromNib() {
         super.awakeFromNib()
@@ -7,7 +7,7 @@ final class TabBarController: UITabBarController {
         let imagesListViewController = storyboard.instantiateViewController(withIdentifier: "ImagesListViewController")
         let profileViewController = ProfileViewController()
         profileViewController.tabBarItem = UITabBarItem(
-            title: "", // если подпись не нужна, оставьте пустую строку
+            title: "",
             image: UIImage(named: "tab_profile_active"),
             selectedImage: nil
         )
