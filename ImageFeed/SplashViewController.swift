@@ -38,14 +38,14 @@ final class SplashViewController: UIViewController {
     }
     
     private func setupImageView() {
-        let imageSplashScreenLogo = UIImage(named: "splash_screen_logo") ?? UIImage()
+        let imageSplashScreenLogo = UIImage(named: "auth_screen_logo") ?? UIImage()
 
         let imageView = UIImageView(image: imageSplashScreenLogo)
         self.imageView = imageView
 
         imageView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(imageView)
-
+w
         NSLayoutConstraint.activate([
             imageView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             imageView.centerYAnchor.constraint(equalTo: view.centerYAnchor)

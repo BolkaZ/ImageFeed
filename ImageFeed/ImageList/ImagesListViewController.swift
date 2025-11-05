@@ -1,4 +1,5 @@
 import UIKit
+import WebKit
 
 final class ImagesListViewController: UIViewController {
     private var showSingleImageIdentifier = "ShowSingleImage"
