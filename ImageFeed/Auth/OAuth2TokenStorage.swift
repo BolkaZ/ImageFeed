@@ -6,7 +6,7 @@ final class OAuth2TokenStorage {
     private init() {}
 
     private let tokenKey = "token"
-
+    
     var token: String? {
         get {
             // Получаем токен из Keychain
