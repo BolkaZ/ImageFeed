@@ -45,7 +45,6 @@ final class SplashViewController: UIViewController {
 
         imageView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(imageView)
-w
         NSLayoutConstraint.activate([
             imageView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             imageView.centerYAnchor.constraint(equalTo: view.centerYAnchor)
