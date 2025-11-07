@@ -24,15 +24,48 @@ extension URLSession {
                 if 200 ..< 300 ~= statusCode {
                     fulfillCompletionOnTheMainThread(.success(data))
                 } else {
-                    fulfillCompletionOnTheMainThread(.failure(NetworkError.httpStatusCode(statusCode)))
+                    let error = NetworkError.httpStatusCode(statusCode)
+                    print("[dataTask]: NetworkError - код ошибки \(statusCode)")
+                    fulfillCompletionOnTheMainThread(.failure(error))
                 }
             } else if let error = error {
+                print("[dataTask]: URLRequestError - \(error.localizedDescription)")
                 fulfillCompletionOnTheMainThread(.failure(NetworkError.urlRequestError(error)))
             } else {
-                fulfillCompletionOnTheMainThread(.failure(NetworkError.urlSessionError))
+                let error = NetworkError.urlSessionError
+                print("[dataTask]: URLSessionError - неизвестная ошибка")
+                fulfillCompletionOnTheMainThread(.failure(error))
             }
         })
         
+        return task
+    }
+}
+
+extension URLSession {
+    func objectTask<T: Decodable>(
+        for request: URLRequest,
+        completion: @escaping (Result<T, Error>) -> Void
+    ) -> URLSessionTask {
+        let decoder = JSONDecoder()
+        decoder.keyDecodingStrategy = .convertFromSnakeCase
+
+        let task = data(for: request) { (result: Result<Data, Error>) in
+            switch result {
+            case .success(let data):
+                do {
+                    let decodedObject = try decoder.decode(T.self, from: data)
+                    completion(.success(decodedObject))
+                } catch {
+                    print("[objectTask]: Ошибка декодирования : \(error), Данные: \(String(data: data, encoding: .utf8) ?? "")")
+                    completion(.failure(error))
+                }
+
+            case .failure(let error):
+                completion(.failure(error))
+            }
+        }
+
         return task
     }
 }

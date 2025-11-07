@@ -1,5 +1,6 @@
 import Foundation
 import UIKit
+import WebKit
 
 final class SingleImageViewController: UIViewController {
     var image: UIImage? {

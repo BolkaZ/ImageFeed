@@ -1,43 +1,90 @@
 import Foundation
+import WebKit
+
+enum AuthServiceError: Error {
+    case invalidRequest
+}
 
 final class OAuth2Service {
     static let shared = OAuth2Service()
+    
+    private let dataStorage = OAuth2TokenStorage.shared
+    private let urlSession = URLSession.shared
+    
+    private var task: URLSessionTask?
+    private var lastCode: String?
+    
+    private(set) var authToken: String? {
+        get {
+            return dataStorage.token
+        }
+        set {
+            dataStorage.token = newValue
+        }
+    }
+    
     private init() { }
     
+    // MARK: - Token
+    
     func fetchOAuthToken(_ code: String, completion: @escaping (Result<String, Error>) -> Void) {
+        assert(Thread.isMainThread)
+        if task != nil {
+            if lastCode != code {
+                task?.cancel()
+            } else {
+                print("[fetchOAuthToken]: Ошибка - повторный запрос с тем же кодом")
+                completion(.failure(AuthServiceError.invalidRequest))
+                return
+            }
+        } else {
+            if lastCode == code {
+                print("[fetchOAuthToken]: Ошибка - повторный запрос с тем же кодом")
+                completion(.failure(AuthServiceError.invalidRequest))
+                return
+            }
+        }
+        
+        lastCode = code
+        
         guard let request = makeOAuthTokenRequest(code: code) else {
-            completion(.failure(NSError(domain: "Не получилось создать запрос", code: 0, userInfo: nil)))
+            print("[fetchOAuthToken]: Ошибка - неверный URL запроса")
+            completion(.failure(AuthServiceError.invalidRequest))
             return
         }
         
-        let task = URLSession.shared.data(for: request) { result in
-            switch result {
-            case .success(let data):
-                do {
-                    if let json = try JSONSerialization.jsonObject(with: data) as? [String: Any],
-                       let token = json["access_token"] as? String {
-                        print("Токен получен: \(token)")
-                        OAuth2TokenStorage.shared.token = token
-                        completion(.success(token))
-                    } else {
-                        print("В ответе нет токена")
-                        completion(.failure(NSError(domain: "Нет токена", code: 0, userInfo: nil)))
-                    }
-                } catch {
-                    print("Ошибка чтения JSON: \(error)")
-                    completion(.failure(error))
-                }
+        let task = urlSession.objectTask(for: request) { [weak self] (result: Result<OAuthTokenResponseBody, Error>) in
+            DispatchQueue.main.async {
+                UIBlockingProgressHUD.dismiss()
+                guard let self = self else { return }
                 
-            case .failure(let error):
-                print("Ошибка сети или HTTP-статус: \(error)")
-                completion(.failure(error))
+                switch result {
+                case .success(let body):
+                    let authToken = body.accessToken
+                    self.authToken = authToken
+                    completion(.success(authToken))
+                    
+                    self.task = nil
+                    self.lastCode = nil
+                    
+                case .failure(let error):
+                    print("[fetchOAuthToken]: Ошибка запроса: \(error.localizedDescription)")
+                    completion(.failure(error))
+                    
+                    self.task = nil
+                    self.lastCode = nil
+                }
             }
         }
+        self.task = task
         task.resume()
     }
     
     private func makeOAuthTokenRequest(code: String) -> URLRequest? {
-        guard var urlComponents = URLComponents(string: "https://unsplash.com/oauth/token") else {
+        guard
+            var urlComponents = URLComponents(string: "https://unsplash.com/oauth/token")
+        else {
+            assertionFailure("Failed to create URL")
             return nil
         }
         
@@ -58,3 +105,4 @@ final class OAuth2Service {
         return request
     }
 }
+
