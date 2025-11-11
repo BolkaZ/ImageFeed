@@ -52,6 +52,9 @@
                                                     </constraints>
                                                     <state key="normal" title="Button"/>
                                                     <buttonConfiguration key="configuration" style="plain" image="Favorites No Active"/>
+                                                    <connections>
+                                                        <action selector="likeButtonClicked:" destination="1RT-GL-sRt" eventType="touchUpInside" id="oVZ-bZ-20m"/>
+                                                    </connections>
                                                 </button>
                                             </subviews>
                                             <constraints>
