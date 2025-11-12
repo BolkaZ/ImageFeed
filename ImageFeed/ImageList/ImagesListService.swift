@@ -88,7 +88,9 @@ final class ImagesListService {
 
         let nextPage = (lastLoadedPage ?? 0) + 1
 
-        var components = URLComponents(string: "https://api.unsplash.com/photos")!
+        guard var components = URLComponents(string: "https://api.unsplash.com/photos") else {
+            return nil
+        }
         components.queryItems = [
             URLQueryItem(name: "page", value: "\(nextPage)"),
             URLQueryItem(name: "per_page", value: "10")

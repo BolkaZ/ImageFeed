@@ -3,11 +3,11 @@ import Kingfisher
 
 final class ProfileViewController: UIViewController {
 
-    private var userPickView = UIImageView()
-    private var nameLabel = UILabel()
-    private var logoutButton = UIButton(type: .custom)
-    private var loginLabel = UILabel()
-    private var descriptionLabel = UILabel()
+    private let userPickView = UIImageView()
+    private let nameLabel = UILabel()
+    private let logoutButton = UIButton(type: .custom)
+    private let loginLabel = UILabel()
+    private let descriptionLabel = UILabel()
 
     private var profileImageServiceObserver: NSObjectProtocol?
 
@@ -156,10 +156,11 @@ final class ProfileViewController: UIViewController {
             message: "Уверены, что хотите выйти?",
             preferredStyle: .alert
         )
-        alert.addAction(UIAlertAction(title: "Да", style: .default) { _ in
+        alert.addAction(.init(title: "Нет", style: .cancel))
+        alert.addAction(.init(title: "Да", style: .default, handler: { [weak self] _ in
+            guard let self else { return }
             ProfileLogoutService.shared.logout()
-        })
-        alert.addAction(UIAlertAction(title: "Нет", style: .default))
+        }))
         present(alert, animated: true)
     }
 }
