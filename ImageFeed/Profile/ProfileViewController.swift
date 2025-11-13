@@ -3,13 +3,23 @@ import Kingfisher
 
 final class ProfileViewController: UIViewController {
 
-    private let userPickView = UIImageView()
-    private let nameLabel = UILabel()
-    private let logoutButton = UIButton(type: .custom)
-    private let loginLabel = UILabel()
-    private let descriptionLabel = UILabel()
+    private enum Constants {
+        static let avatarCornerRadius: CGFloat = 35
+    }
 
-    private var profileImageServiceObserver: NSObjectProtocol?
+    private var presenter: ProfilePresenterProtocol?
+
+    private(set) lazy var userPickView = UIImageView()
+    private(set) lazy var nameLabel = UILabel()
+    private(set) lazy var logoutButton = UIButton(type: .custom)
+    private(set) lazy var loginLabel = UILabel()
+    private(set) lazy var descriptionLabel = UILabel()
+
+    // MARK: - Configuration
+
+    func configure(presenter: ProfilePresenterProtocol) {
+        self.presenter = presenter
+    }
 
     // MARK: - Lifecycle
     override func viewDidLoad() {
@@ -17,26 +27,10 @@ final class ProfileViewController: UIViewController {
         setupView()
         setupUIObjects()
         setupConstraints()
-
-        if let profile = ProfileService.shared.profile {
-            updateProfileDetails(profile: profile)
+        if presenter == nil {
+            presenter = ProfilePresenter(view: self)
         }
-
-        profileImageServiceObserver = NotificationCenter.default.addObserver(
-            forName: ProfileImageService.didChangeNotification,
-            object: nil,
-            queue: .main
-        ) { [weak self] _ in
-            self?.updateAvatar()
-        }
-
-        updateAvatar()
-    }
-
-    deinit {
-        if let observer = profileImageServiceObserver {
-            NotificationCenter.default.removeObserver(observer)
-        }
+        presenter?.viewDidLoad()
     }
 
     // MARK: - UI Setup
@@ -58,6 +52,7 @@ final class ProfileViewController: UIViewController {
         userPickView.layer.cornerRadius = 35
         userPickView.contentMode = .scaleAspectFill
         userPickView.translatesAutoresizingMaskIntoConstraints = false
+        userPickView.accessibilityIdentifier = "profile-avatar-image-view"
         view.addSubview(userPickView)
     }
 
@@ -68,6 +63,7 @@ final class ProfileViewController: UIViewController {
         logoutButton.setImage(image, for: .normal)
         logoutButton.translatesAutoresizingMaskIntoConstraints = false
         logoutButton.accessibilityLabel = "Logout"
+        logoutButton.accessibilityIdentifier = "profile-logout-button"
         logoutButton.addTarget(self, action: #selector(didTapLogout), for: .touchUpInside)
         view.addSubview(logoutButton)
     }
@@ -76,6 +72,7 @@ final class ProfileViewController: UIViewController {
         nameLabel.textColor = UIColor(named: "YP White")
         nameLabel.font = UIFont.systemFont(ofSize: 23, weight: .bold)
         nameLabel.translatesAutoresizingMaskIntoConstraints = false
+        nameLabel.accessibilityIdentifier = "profile-name-label"
         view.addSubview(nameLabel)
     }
 
@@ -83,6 +80,7 @@ final class ProfileViewController: UIViewController {
         loginLabel.textColor = UIColor(named: "YP Gray")
         loginLabel.font = UIFont.systemFont(ofSize: 13)
         loginLabel.translatesAutoresizingMaskIntoConstraints = false
+        loginLabel.accessibilityIdentifier = "profile-login-label"
         view.addSubview(loginLabel)
     }
 
@@ -90,6 +88,7 @@ final class ProfileViewController: UIViewController {
         descriptionLabel.textColor = UIColor(named: "YP White")
         descriptionLabel.font = UIFont.systemFont(ofSize: 13)
         descriptionLabel.translatesAutoresizingMaskIntoConstraints = false
+        descriptionLabel.accessibilityIdentifier = "profile-description-label"
         view.addSubview(descriptionLabel)
     }
 
@@ -121,20 +120,22 @@ final class ProfileViewController: UIViewController {
 
     // MARK: - Update UI
 
-    private func updateProfileDetails(profile: Profile) {
-        nameLabel.text = profile.name
-        loginLabel.text = profile.loginName
-        descriptionLabel.text = profile.bio
+    private func updateProfileDetails(viewModel: ProfileViewModel) {
+        nameLabel.text = viewModel.name
+        loginLabel.text = viewModel.login
+        descriptionLabel.text = viewModel.bio
+        descriptionLabel.isHidden = viewModel.bio?.isEmpty ?? true
     }
 
-    private func updateAvatar() {
-        guard
-            let profileImageURL = ProfileImageService.shared.avatarURL,
-            let url = URL(string: profileImageURL)
-        else { return }
-
+    private func updateAvatar(with url: URL?) {
         let placeholder = UIImage(named: "profileImage") ?? UIImage(systemName: "person.crop.circle.fill")
-        let processor = RoundCornerImageProcessor(cornerRadius: 35)
+        let processor = RoundCornerImageProcessor(cornerRadius: Constants.avatarCornerRadius)
+
+        guard let url else {
+            userPickView.kf.cancelDownloadTask()
+            userPickView.image = placeholder
+            return
+        }
 
         userPickView.kf.indicatorType = .activity
         userPickView.kf.setImage(
@@ -151,15 +152,30 @@ final class ProfileViewController: UIViewController {
     // MARK: - Actions
 
     @objc private func didTapLogout() {
+        presenter?.didTapLogout()
+    }
+}
+
+// MARK: - ProfileView
+
+extension ProfileViewController: ProfileView {
+    func displayProfile(_ viewModel: ProfileViewModel) {
+        updateProfileDetails(viewModel: viewModel)
+    }
+
+    func displayAvatar(with url: URL?) {
+        updateAvatar(with: url)
+    }
+
+    func presentLogoutAlert(confirmHandler: @escaping () -> Void) {
         let alert = UIAlertController(
             title: "Пока, пока!",
             message: "Уверены, что хотите выйти?",
             preferredStyle: .alert
         )
         alert.addAction(.init(title: "Нет", style: .cancel))
-        alert.addAction(.init(title: "Да", style: .default, handler: { [weak self] _ in
-            guard let self else { return }
-            ProfileLogoutService.shared.logout()
+        alert.addAction(.init(title: "Да", style: .default, handler: { _ in
+            confirmHandler()
         }))
         present(alert, animated: true)
     }

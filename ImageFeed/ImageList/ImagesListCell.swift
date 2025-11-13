@@ -2,7 +2,7 @@ import Foundation
 import Kingfisher
 import UIKit
 
-final class ImagesListCell: UITableViewCell {
+class ImagesListCell: UITableViewCell {
     static let reuseIdentifier = "ImagesListCell"
     
     @IBOutlet var cellImage: UIImageView!
