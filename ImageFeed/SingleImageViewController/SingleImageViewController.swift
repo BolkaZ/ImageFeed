@@ -2,7 +2,7 @@ import Foundation
 import UIKit
 import WebKit
 
-final class SingleImageViewController: UIViewController {
+class SingleImageViewController: UIViewController {
     
     @IBOutlet private var imageView: UIImageView!
     @IBOutlet private weak var scrollView: UIScrollView!
