@@ -1,68 +1,78 @@
 import Foundation
 
 enum NetworkError: Error {
-    case httpStatusCode(Int)
+    case httpStatus(code: Int, data: Data?)
     case urlRequestError(Error)
     case urlSessionError
-    case invalidRequest
+    case invalidResponse
+    case noData
     case decodingError(Error)
 }
 
 extension URLSession {
     func data(
         for request: URLRequest,
-        completion: @escaping (Result<Data, Error>) -> Void
+        completion: @escaping (Result<Data, NetworkError>) -> Void
     ) -> URLSessionTask {
-        let fulfillCompletionOnTheMainThread: (Result<Data, Error>) -> Void = { result in
+        let fulfillCompletionOnTheMainThread: (Result<Data, NetworkError>) -> Void = { result in
             DispatchQueue.main.async {
                 completion(result)
             }
         }
-        
-        let task = dataTask(with: request, completionHandler: { data, response, error in
-            if let data = data, let response = response, let statusCode = (response as? HTTPURLResponse)?.statusCode {
-                if 200 ..< 300 ~= statusCode {
-                    fulfillCompletionOnTheMainThread(.success(data))
-                } else {
-                    let error = NetworkError.httpStatusCode(statusCode)
-                    print("[dataTask]: NetworkError - код ошибки \(statusCode)")
-                    fulfillCompletionOnTheMainThread(.failure(error))
-                }
-            } else if let error = error {
-                print("[dataTask]: URLRequestError - \(error.localizedDescription)")
-                fulfillCompletionOnTheMainThread(.failure(NetworkError.urlRequestError(error)))
-            } else {
-                let error = NetworkError.urlSessionError
-                print("[dataTask]: URLSessionError - неизвестная ошибка")
-                fulfillCompletionOnTheMainThread(.failure(error))
+
+        let task = dataTask(with: request) { data, response, error in
+            if let error = error {
+                print("[dataTask]: NetworkError - ошибка запроса (urlRequestError): \(error.localizedDescription)")
+                fulfillCompletionOnTheMainThread(.failure(.urlRequestError(error)))
+                return
             }
-        })
-        
+
+            guard let httpResponse = response as? HTTPURLResponse else {
+                print("[dataTask]: NetworkError - некорректный ответ (invalidResponse)")
+                fulfillCompletionOnTheMainThread(.failure(.invalidResponse))
+                return
+            }
+
+            guard let data = data else {
+                print("[dataTask]: NetworkError - отсутствуют данные (noData)")
+                fulfillCompletionOnTheMainThread(.failure(.noData))
+                return
+            }
+
+            if (200 ..< 300).contains(httpResponse.statusCode) {
+                fulfillCompletionOnTheMainThread(.success(data))
+            } else {
+                print("[dataTask]: NetworkError - httpStatus код ошибки \(httpResponse.statusCode)")
+                fulfillCompletionOnTheMainThread(.failure(.httpStatus(code: httpResponse.statusCode, data: data)))
+            }
+        }
+
+        task.resume()
         return task
     }
-}
 
-extension URLSession {
+    @discardableResult
     func objectTask<T: Decodable>(
         for request: URLRequest,
-        completion: @escaping (Result<T, Error>) -> Void
+        completion: @escaping (Result<T, NetworkError>) -> Void
     ) -> URLSessionTask {
         let decoder = JSONDecoder()
-        decoder.keyDecodingStrategy = .convertFromSnakeCase
 
-        let task = data(for: request) { (result: Result<Data, Error>) in
+        let task = data(for: request) { result in
             switch result {
+            case .failure(let error):
+                print("[objectTask]: NetworkError - прокидываем ошибку \(error)")
+                completion(.failure(error))
+
             case .success(let data):
                 do {
-                    let decodedObject = try decoder.decode(T.self, from: data)
-                    completion(.success(decodedObject))
+                    let object = try decoder.decode(T.self, from: data)
+                    completion(.success(object))
                 } catch {
-                    print("[objectTask]: Ошибка декодирования : \(error), Данные: \(String(data: data, encoding: .utf8) ?? "")")
-                    completion(.failure(error))
+                    let dataString = String(data: data, encoding: .utf8) ?? "<не смогли получить строковое представление данных>"
+                    print("[objectTask]: Ошибка декодирования: \(error.localizedDescription), Данные: \(dataString)")
+                    completion(.failure(.decodingError(error)))
                 }
-
-            case .failure(let error):
-                completion(.failure(error))
             }
         }
 

@@ -52,6 +52,9 @@
                                                     </constraints>
                                                     <state key="normal" title="Button"/>
                                                     <buttonConfiguration key="configuration" style="plain" image="Favorites No Active"/>
+                                                    <connections>
+                                                        <action selector="likeButtonClicked:" destination="1RT-GL-sRt" eventType="touchUpInside" id="oVZ-bZ-20m"/>
+                                                    </connections>
                                                 </button>
                                             </subviews>
                                             <constraints>
@@ -88,7 +91,7 @@
                             <constraint firstItem="sCF-Yt-D9w" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leading" id="xJ1-qf-NIe"/>
                         </constraints>
                     </view>
-                    <tabBarItem key="tabBarItem" title="Item" image="tab_editorial_active" id="pzP-RA-NV8"/>
+                    <tabBarItem key="tabBarItem" title="" image="tab_editorial_active" id="pzP-RA-NV8"/>
                     <navigationItem key="navigationItem" id="YNi-s7-mUX"/>
                     <connections>
                         <outlet property="tableView" destination="sCF-Yt-D9w" id="dAh-JE-Hoe"/>
